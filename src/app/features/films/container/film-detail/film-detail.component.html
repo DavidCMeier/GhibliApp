@@ -1,0 +1,19 @@
+<ng-container *ngIf="film$ | async as film">
+  <h2>Title: {{film.title}}</h2>
+  <p>Description: {{film.description}}</p>
+  <p>Director: {{film.director}}</p>
+  <p>Producer: {{film.producer}}</p>
+  <p>Release Date: {{film.release_date}}</p>
+  <p>Score: {{film.rt_score}}</p>
+  <ng-container *ngIf="film.people.length > 0">
+    <ng-container *ngIf="getExtra(extras.people, film.people) | async as people">
+    <h3>People</h3>
+    <ul>
+      <li *ngFor="let person of people">
+        {{person.name}}
+      </li>
+    </ul>
+    </ng-container>
+
+  </ng-container>
+</ng-container>

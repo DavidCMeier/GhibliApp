@@ -1,0 +1,18 @@
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Film } from "../../models/film.model";
+
+@Component({
+  selector: 'app-films-list',
+  templateUrl: './films-list.component.html',
+  styleUrls: ['./films-list.component.scss']
+})
+export class FilmsListComponent implements OnInit {
+
+  @Input() films!: Film[];
+  @Output() selectedFilmId: EventEmitter<string> = new EventEmitter<string>();
+  constructor() { }
+
+  ngOnInit(): void {
+  }
+
+}
