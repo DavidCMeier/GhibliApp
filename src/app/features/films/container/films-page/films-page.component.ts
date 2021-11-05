@@ -2,7 +2,8 @@ import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
 import { FilmService } from "../../services/film.service";
 import { Observable } from "rxjs";
 import { Film } from "../../models/film.model";
-import { Router } from "@angular/router";
+import { Store } from "@ngrx/store";
+import * as fromStore from '../../../../core/store';
 
 @Component({
   selector: 'app-films-page',
@@ -14,13 +15,13 @@ export class FilmsPageComponent implements OnInit {
 
   films$: Observable<Film[]> = this.filmService.getListFilms();
 
-  constructor(private filmService: FilmService, private router: Router) { }
+  constructor(private filmService: FilmService, private store$: Store) { }
 
   ngOnInit(): void {
   }
 
   openFilm(id: string){
-    this.router.navigate(['/films', id]);
+    this.store$.dispatch(fromStore.go({commands: ['/films', id]}));
   }
 
 }

@@ -14,6 +14,8 @@ import { FormsModule } from "@angular/forms";
 import { StoreModule } from "@ngrx/store";
 import * as fromState from "./store"
 import { EffectsModule } from "@ngrx/effects";
+import { RouterStateSerializer, StoreRouterConnectingModule } from "@ngrx/router-store";
+import { CustomSerializer } from "./store/reducers/router.reducer";
 
 @NgModule({
   declarations: [
@@ -31,13 +33,16 @@ import { EffectsModule } from "@ngrx/effects";
     CommonModule,
     FormsModule,
     StoreModule.forFeature('core', fromState.reducers),
-    EffectsModule.forFeature(fromState.effects)
+    EffectsModule.forFeature(fromState.effects),
+    StoreRouterConnectingModule.forRoot()
   ],
   exports: [
     ShellComponent,
     HeaderComponent
   ],
-  providers: [],
+  providers: [
+    { provide: RouterStateSerializer, useClass: CustomSerializer }
+  ],
   bootstrap: [RootComponent]
 })
 export class CoreModule { }

@@ -383,5 +383,153 @@ en el angular.json
 ```
 Ahora cuando creéis un componente nuevo con el cli automáticamente se añadirá la propiedad OnPush en el componente.
 
+### Router
+
+Para hacer lo mismo con la navegación usaremos lo que ngrx nos ofrece:
+vamos a core.module.ts y añadimos el import:
+```ts
+StoreRouterConnectingModule.forRoot()
+```
+Empezamos con el reducers/router.reducer.ts:
+```ts
+import { Params, RouterStateSnapshot } from "@angular/router";
+import * as fromRouter from '@ngrx/router-store';
+import { RouterStateSerializer } from '@ngrx/router-store';
+
+export interface RouterStateUrl {
+  url: string;
+  queryParams: Params;
+  params: Params;
+}
+
+export type State = fromRouter.RouterReducerState<RouterStateUrl>;
+
+export const reducer = fromRouter.routerReducer;
+
+export class CustomSerializer implements RouterStateSerializer<RouterStateUrl> {
+  serialize(routerState: RouterStateSnapshot): RouterStateUrl {
+    let route = routerState.root;
+
+    while (route.firstChild) {
+      route = route.firstChild;
+    }
+
+    const { url, root: { queryParams }} = routerState;
+    const { params } = route;
+
+    return { url, params, queryParams };
+  }
+}
+```
+- Como vemos se parece mucho a lo que hicimos con las preferencias pero aquí el reducer nos viene ya dado por la librería.
+- Para no sobrecargar el estado con datos que no vamos a usar realmente lo que hacemos es personalizar el serialize para guardar exclusivamente la url, las params y las queryParams. 
+- Si se quisiera añadir algo más se podría agregar aquí y almacenarlo.
+
+En el reducers/index.ts añadimos (O descomentamos si lo tenemos comentado): 
+```ts
+...
+import * as fromRouter from './router.reducer';
+
+ export interface CoreState {
+  ...,
+  router: fromRouter.State; // <-----
+}
+export const reducers: ActionReducerMap<CoreState> = {
+   ...,
+  router: fromRouter.reducer, // <----
+}
+```
+Ahora podemos ver como en la devtool nos aparece el estado del router.
+
+Creamos las acciones para poder navegar usando el store dentro de actions/router.actions.ts: 
+```ts
+import { createAction, props } from "@ngrx/store";
+import { NavigationExtras } from "@angular/router";
+
+export const go = createAction('[Router] Go', props<{ commands: any[]; extras?: NavigationExtras }>());
+export const back = createAction('[Router] Back');
+export const forward = createAction('[Router] Forward');
+```
+La que más usaremos será el go, pero dejamos las otras dos creadas por si se quiere implementar una navegación más completa.
+Añadimos el export al actions/index.ts
+
+Vamos a crear el effect del router: 
+```ts
+@Injectable()
+export class RouterEffects {
+  constructor(
+    private actions$: Actions,
+    private router: Router,
+    private location: Location,
+    private store: Store<CoreState>
+  ) {}
+
+  go$ = createEffect(
+    () =>
+      this.actions$.pipe(
+        ofType(RouterActions.go),
+        tap(({ commands, extras }) => {
+          this.router.navigate(commands, { ...extras });
+        })
+      ),
+    { dispatch: false }
+  );
+
+  back$ = createEffect(
+    () =>
+      this.actions$.pipe(
+        ofType(RouterActions.back),
+        tap(() => this.location.back())
+      ),
+    { dispatch: false }
+  );
+
+  forward$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(RouterActions.forward),
+      tap(() => this.location.forward())
+    ),
+    {dispatch: false}
+  );
+}
+```
+- Cuando se ejecute la acción go se llamará al router.navigate con la información que se quiera.
+- igualmente tenemos creado los efectos para el back y el forward.
+- Importarte no olvidar el dispatch: false para evitar caer en un bucle infinito.
+- ngrx nos ofrece ya muchas acciones por si queremos controlar nuevos efectos, como añadir un loading cuando te mueves :
+  - La idea es que primero escuchas routerRequestAction y lanzas el loading.
+  - Luego escuchas routerCancelAction, routerErrorAction, routerNavigatedAction y cuando cualquiera de estas ocurra pues cierras el loader.
+
+Antes de continuar no nos olvidemos de añadir el RouterEffects en el effects/index.ts y expertar el fichero ahí.
+
+Ahora cambianos los router.navigate de la film-page.component.ts y search-page.component.ts:
+```ts 
+...
+import * as fromStore from '../../../../core/store';
+
+constructor(
+  ...,
+  private store$: Store,
+)
+
+openFilm(id: string){
+  this.store$.dispatch(fromStore.go({commands: ['/films', id]}));
+}
+```
+
+Para terminar con el router vamos a crear los selectores para ayudarte a tener a mano siempre la información del router y actuar ante cambios.
+
+En la app no tenemos que usarlos ahora mismo, pero un ejemplo de uso sería: 
+```ts 
+this.store$
+      .select(fromCore.getRouteParams)
+      .pipe(take(1), withLatestFrom(this.store$.select(fromCore.getQueryParams)))
+      .subscribe(([params, queryParams]) => {
+        //El uso que se quiera dar a las params y las queryParams
+      })
+```
+
+Con esto nuestro core estaría terminado.
+
 
 

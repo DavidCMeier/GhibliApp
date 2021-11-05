@@ -3,7 +3,8 @@ import { FilmService } from "../../../films/services/film.service";
 import { take } from "rxjs/operators";
 import { Film } from "../../../films/models/film.model";
 import { Observable } from "rxjs";
-import { Router } from "@angular/router";
+import * as fromStore from "../../../../core/store";
+import { Store } from "@ngrx/store";
 
 @Component({
   selector: 'app-search-page',
@@ -14,7 +15,7 @@ import { Router } from "@angular/router";
 export class SearchPageComponent implements OnInit {
   films$!: Observable<Film[]>;
 
-  constructor(private filmService: FilmService, private router: Router) { }
+  constructor(private filmService: FilmService, private store$: Store) { }
 
   ngOnInit(): void {
   }
@@ -24,6 +25,6 @@ export class SearchPageComponent implements OnInit {
   }
 
   openFilm(id: string){
-    this.router.navigate(['/films', id]);
+    this.store$.dispatch(fromStore.go({commands: ['/films', id]}));
   }
 }
