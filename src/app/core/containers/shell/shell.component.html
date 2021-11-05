@@ -1,4 +1,6 @@
-<app-header [languages]="languages" (changeLanguage)="changeLanguage($event)" [currentLang]="currentLang"></app-header>
+<ng-container *ngIf="currentLang$ | async as currentLang">
+  <app-header [languages]="languages" (changeLanguage)="changeLanguage($event)" [currentLang]="currentLang"></app-header>
+</ng-container>
 
 <section class="shell">
   <router-outlet></router-outlet>

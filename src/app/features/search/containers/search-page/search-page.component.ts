@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
 import { FilmService } from "../../../films/services/film.service";
 import { take } from "rxjs/operators";
 import { Film } from "../../../films/models/film.model";
@@ -8,7 +8,8 @@ import { Router } from "@angular/router";
 @Component({
   selector: 'app-search-page',
   templateUrl: './search-page.component.html',
-  styleUrls: ['./search-page.component.scss']
+  styleUrls: ['./search-page.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SearchPageComponent implements OnInit {
   films$!: Observable<Film[]>;

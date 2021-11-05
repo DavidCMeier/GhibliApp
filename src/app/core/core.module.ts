@@ -11,7 +11,9 @@ import { MatSelectModule } from "@angular/material/select";
 import { MatOptionModule } from "@angular/material/core";
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
-
+import { StoreModule } from "@ngrx/store";
+import * as fromState from "./store"
+import { EffectsModule } from "@ngrx/effects";
 
 @NgModule({
   declarations: [
@@ -27,7 +29,9 @@ import { FormsModule } from "@angular/forms";
     MatSelectModule,
     MatOptionModule,
     CommonModule,
-    FormsModule
+    FormsModule,
+    StoreModule.forFeature('core', fromState.reducers),
+    EffectsModule.forFeature(fromState.effects)
   ],
   exports: [
     ShellComponent,

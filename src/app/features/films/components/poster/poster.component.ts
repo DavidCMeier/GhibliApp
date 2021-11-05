@@ -1,9 +1,10 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input, OnInit } from '@angular/core';
 
 @Component({
   selector: 'app-poster',
   templateUrl: './poster.component.html',
-  styleUrls: ['./poster.component.scss']
+  styleUrls: ['./poster.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PosterComponent implements OnInit {
 

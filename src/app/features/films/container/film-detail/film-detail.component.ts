@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
 import { FilmService } from "../../services/film.service";
 import { Observable } from "rxjs";
 import { Film } from "../../models/film.model";
@@ -7,7 +7,8 @@ import { ActivatedRoute } from "@angular/router";
 @Component({
   selector: 'app-film-detail',
   templateUrl: './film-detail.component.html',
-  styleUrls: ['./film-detail.component.scss']
+  styleUrls: ['./film-detail.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FilmDetailComponent implements OnInit {
 
