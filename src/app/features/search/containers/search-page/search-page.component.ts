@@ -1,4 +1,9 @@
 import { Component, OnInit } from '@angular/core';
+import { FilmService } from "../../../films/services/film.service";
+import { take } from "rxjs/operators";
+import { Film } from "../../../films/models/film.model";
+import { Observable } from "rxjs";
+import { Router } from "@angular/router";
 
 @Component({
   selector: 'app-search-page',
@@ -6,10 +11,18 @@ import { Component, OnInit } from '@angular/core';
   styleUrls: ['./search-page.component.scss']
 })
 export class SearchPageComponent implements OnInit {
+  films$!: Observable<Film[]>;
 
-  constructor() { }
+  constructor(private filmService: FilmService, private router: Router) { }
 
   ngOnInit(): void {
   }
 
+  searchFilm(searchText: string) {
+    this.films$= this.filmService.searchFilms(searchText).pipe(take(1))
+  }
+
+  openFilm(id: string){
+    this.router.navigate(['/films', id]);
+  }
 }

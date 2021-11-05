@@ -1,7 +1,24 @@
 {
   "menu": {
-    "home": "Principal",
-    "about": "Sobre la web",
-    "contact": "Contacto"
+    "search": "Buscador",
+    "films": "Películas",
+    "title": "GhibliApp",
+    "language": "Idioma"
+  },
+  "films": {
+    "detail": {
+      "original_title": "Título Original: {{originalTitle}}",
+      "original_title_romanised": "Título Original Romanizado: {{originalTitleRomanised}}",
+      "directed": "Dirigido por {{director}}",
+      "produced": "Producido by {{producer}}",
+      "duration": "Duración: {{duration}} min",
+      "rt_score": "Puntuación: {{score}}"
+    },
+    "poster": {
+      "alt": "Poster de {{title}}"
+    }
+  },
+  "search": {
+    "title": "Buscador por Título"
   }
 }

@@ -1,4 +1,4 @@
-<app-header></app-header>
+<app-header [languages]="languages" (changeLanguage)="changeLanguage($event)" [currentLang]="currentLang"></app-header>
 
 <section class="shell">
   <router-outlet></router-outlet>

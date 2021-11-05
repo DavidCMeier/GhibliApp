@@ -6,6 +6,11 @@ import { HeaderComponent } from './components/header/header.component';
 import { MatToolbarModule } from "@angular/material/toolbar";
 import { RouterModule } from "@angular/router";
 import { MatButtonModule } from "@angular/material/button";
+import { SharedModule } from "../shared/shared.module";
+import { MatSelectModule } from "@angular/material/select";
+import { MatOptionModule } from "@angular/material/core";
+import { CommonModule } from "@angular/common";
+import { FormsModule } from "@angular/forms";
 
 
 @NgModule({
@@ -17,7 +22,12 @@ import { MatButtonModule } from "@angular/material/button";
     TranslateModule,
     MatToolbarModule,
     RouterModule,
-    MatButtonModule
+    MatButtonModule,
+    SharedModule,
+    MatSelectModule,
+    MatOptionModule,
+    CommonModule,
+    FormsModule
   ],
   exports: [
     ShellComponent,

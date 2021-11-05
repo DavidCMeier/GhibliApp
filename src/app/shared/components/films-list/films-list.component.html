@@ -1,5 +1,3 @@
-<h1>List of films</h1>
-
 <section class="grid-list">
   <app-card-film *ngFor="let film of films" [film]="film" (click)="selectedFilmId.emit(film.id)"></app-card-film>
 </section>

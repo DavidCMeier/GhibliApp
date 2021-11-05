@@ -1,13 +1,18 @@
 <mat-toolbar color="primary">
-  <mat-toolbar-row>
-
-    <h1 [routerLink]="'/'">Ghibli App</h1>
-    <span class="menu-spacer"></span>
-    <div>
-      <a mat-button [routerLink]="'/search'"> Buscador </a>
-      <a mat-button [routerLink]="'/films'"> Películas </a>
-
+    <div class="menu__position">
+      <h1 [routerLink]="'/'">{{'menu.title' | translate}}</h1>
+      <span class="menu-spacer"></span>
+      <div >
+        <a mat-button [routerLink]="'/search'"> {{'menu.search' | translate}} </a>
+        <a mat-button [routerLink]="'/films'"> {{'menu.films' | translate}} </a>
+      </div>
+      <span class="menu-spacer lang__box"></span>
+      <div class="select">
+        <mat-select [(value)]="currentLang" (valueChange)="changeLanguageValue($event)">
+          <mat-option *ngFor="let lang of languages" [value]="lang.code">{{lang.name}}</mat-option>
+        </mat-select>
+      </div>
     </div>
-  </mat-toolbar-row>
+
 
 </mat-toolbar>

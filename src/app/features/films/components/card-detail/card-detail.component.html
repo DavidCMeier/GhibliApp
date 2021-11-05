@@ -1,0 +1,16 @@
+<div class="flex-content">
+  <mat-card class="card-detail">
+    <mat-card-title>{{film.title}}</mat-card-title>
+    <mat-card-subtitle> {{film.director}} - {{film.release_date}}</mat-card-subtitle>
+    <img mat-card-image [src]="film.movie_banner" [alt]="film.title + ' banner'">
+    <mat-card-content>
+      <p>{{'films.detail.original_title' | translate: {originalTitle: film.original_title} }}</p>
+      <p>{{ 'films.detail.original_title_romanised' | translate:{originalTitleRomanised: film.original_title_romanised} }}</p>
+      <p>{{film.description}}</p>
+      <p>{{ 'films.detail.directed' | translate:{director: film.director} }}</p>
+      <p>{{ 'films.detail.produced' | translate:{producer: film.producer} }}</p>
+      <p>{{ 'films.detail.duration' | translate:{duration: film.running_time} }}</p>
+      <p>{{ 'films.detail.rt_score' | translate:{score: film.rt_score} }}</p>
+    </mat-card-content>
+  </mat-card>
+</div>

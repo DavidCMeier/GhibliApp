@@ -1,1 +1,6 @@
-<p>search-page works!</p>
+<div class="flex-content">
+  <app-bar-search (search)="searchFilm($event)"></app-bar-search>
+</div>
+<ng-container *ngIf="films$ | async as films">
+  <app-films-list [films]="films" (selectedFilmId)="openFilm($event)"></app-films-list>
+</ng-container>
