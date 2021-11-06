@@ -4,3 +4,4 @@
     <app-poster [poster]="film.image" [filmTitle]="film.title"></app-poster>
   </div>
 </ng-container>
+<app-loading *ngIf="loading$ |async"></app-loading>

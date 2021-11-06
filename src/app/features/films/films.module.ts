@@ -8,7 +8,9 @@ import { CardDetailComponent } from './components/card-detail/card-detail.compon
 import { PosterComponent } from './components/poster/poster.component';
 import { SharedModule } from "../../shared/shared.module";
 import { TranslateModule } from "@ngx-translate/core";
-
+import { StoreModule } from "@ngrx/store";
+import { EffectsModule } from "@ngrx/effects";
+import * as fromStore from './store';
 
 const routes: Routes = [
   {
@@ -34,7 +36,9 @@ const routes: Routes = [
     RouterModule.forChild(routes),
     MatCardModule,
     SharedModule,
-    TranslateModule
+    TranslateModule,
+    StoreModule.forFeature('films', fromStore.reducers),
+    EffectsModule.forFeature(fromStore.effects)
   ]
 })
 export class FilmsModule { }

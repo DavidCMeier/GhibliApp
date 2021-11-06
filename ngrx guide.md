@@ -441,6 +441,15 @@ export const reducers: ActionReducerMap<CoreState> = {
 ```
 Ahora podemos ver como en la devtool nos aparece el estado del router.
 
+En este momento vamos a añadir el CustomSerializer al modulo:
+
+core.module.ts y añadimos: 
+```ts
+providers: [
+  { provide: RouterStateSerializer, useClass: CustomSerializer }
+]
+```
+
 Creamos las acciones para poder navegar usando el store dentro de actions/router.actions.ts: 
 ```ts
 import { createAction, props } from "@ngrx/store";
@@ -500,12 +509,12 @@ export class RouterEffects {
   - La idea es que primero escuchas routerRequestAction y lanzas el loading.
   - Luego escuchas routerCancelAction, routerErrorAction, routerNavigatedAction y cuando cualquiera de estas ocurra pues cierras el loader.
 
-Antes de continuar no nos olvidemos de añadir el RouterEffects en el effects/index.ts y expertar el fichero ahí.
+Antes de continuar no nos olvidemos de añadir el RouterEffects en el effects/index.ts y exportar el fichero ahí.
 
 Ahora cambianos los router.navigate de la film-page.component.ts y search-page.component.ts:
 ```ts 
 ...
-import * as fromStore from '../../../../core/store';
+import * as fromCoreStore from '../../../../core/store';
 
 constructor(
   ...,
@@ -513,7 +522,7 @@ constructor(
 )
 
 openFilm(id: string){
-  this.store$.dispatch(fromStore.go({commands: ['/films', id]}));
+  this.store$.dispatch(fromCoreStore.go({commands: ['/films', id]}));
 }
 ```
 
@@ -532,4 +541,639 @@ this.store$
 Con esto nuestro core estaría terminado.
 
 
+## Crear Store para Feature/Films
 
+Bueno aquí ya entramos a aplicar todo lo aprendido hasta ahora.
+
+La idea se podría ver como crear un fichero de actions, effects, reducer y selectors por cada "página" que tengamos. En este caso tenemos la página del listado y la del detalle.
+Si tuviesemos un formulario, este debería de ir en otro reducer también (si queremos mantener el estado)
+
+Esta sería la estructura final que usaríamos para films:
+- Store
+  - Actions
+    - index.ts
+    - film-detail.actions.ts
+    - films-page.actions.ts
+  - Effects
+    - index.ts
+    - film-detail.effects.ts
+    - films-page.effects.ts
+  - Reducers
+    - index.ts
+    - film-detail.reducer.ts
+    - films-page.reducer.ts
+  - Selectors
+    - index.ts
+    - film-detail.selectors.ts
+    - films-page.selectors.ts
+- index.ts
+
+Empezamos con los reducers, primero el index.ts:
+```ts
+import { ActionReducerMap, createFeatureSelector } from "@ngrx/store";
+import * as fromFilms from './films-page.reducer'
+import * as fromDetails from './films-details.reducer'
+
+export interface FilmsState {
+  films: fromFilms.State,
+  details: fromDetails.State,
+}
+
+export const reducers: ActionReducerMap<FilmsState> ={
+  films: fromFilms.reducer,
+  details: fromDetails.reducer
+}
+
+export const getFilmsFeatureState = createFeatureSelector<FilmsState>('films')
+  
+```
+Ahora con films-page.reducer.ts:
+```ts
+import { Film } from "../../models/film.model";
+import { createReducer, on } from "@ngrx/store";
+import * as filmsPageActions from '../actions'
+export interface State {
+  films: Film[],
+  loading: boolean
+}
+
+export const initialState: State = {
+  films: [],
+  loading: false,
+};
+
+export const reducer = createReducer(
+  initialState,
+  on(filmsPageActions.loadFilms, (state) => ({
+    ...state,
+    loading: true,
+  })),
+  on(filmsPageActions.loadFilmsSuccess, (state, action) => ({
+    ...state,
+    loading: false,
+    films: action.films
+  })),
+  on(filmsPageActions.loadFilmsError, (state) => ({
+    ...state,
+    loading: false,
+  })),
+)
+```
+- Vemos como hemos añadido una propiedad al estado para poner una pantalla de loading.
+- Estamos escuchando 3 acciones:
+  - La primera es el loadFilms donde indicamos que vamos a realizar la llamada al servicio y por eso cambiamos el estado del loading a true.
+  - La segunda será ejecutada durante el efecto y cargará los datos en el estado además de cambiar el loading a false.
+  - La tercera la usaremos por si la llamada fallase quitar el loading. Se ejecutará desde el efecto también.
+
+Este patron se usa siempre para realizar la carga de datos desde un api.
+  
+Si necesitases algún parametro para realizar la llamada en el servicio deberías de almacenarla aquí, esto lo veremos en el siguiente reducer.
+
+Creamos el reducer para el film-detail.reducer.ts:
+```ts
+import { Film } from "../../models/film.model";
+import { createReducer, on } from "@ngrx/store";
+import * as filmsPageActions from '../actions'
+export interface State {
+  film: Film,
+  loading: boolean,
+  uuid: string
+}
+
+export const initialState: State = {
+  film: {
+    id: '',
+    title: '',
+    original_title: '',
+    original_title_romanised: '',
+    image: '',
+    movie_banner: '',
+    description: '',
+    director: '',
+    producer: '',
+    release_date: '',
+    running_time: '',
+    rt_score: '',
+    people: [],
+    species: [],
+    locations: [],
+    vehicles: [],
+    url: ''
+  },
+  loading: false,
+  uuid: ''
+};
+
+export const reducer = createReducer(
+  initialState,
+  on(filmsPageActions.loadFilm, (state, action) => ({
+    ...state,
+    loading: true,
+    uuid: action.uuid
+  })),
+  on(filmsPageActions.loadFilmsSuccess, (state, action) => ({
+    ...state,
+    loading: false,
+    film: action.film
+  })),
+  on(filmsPageActions.loadFilmsError, (state) => ({
+    ...state,
+    loading: false,
+  })),
+)
+
+```
+- Como vemos, cuando realizamos el loadFilm almacenamos el uuid que necesitaremos usar en el servicio.
+
+
+creamos las acciones: 
+
+film-detail.actions.ts
+```ts
+import { createAction, props } from "@ngrx/store";
+import { Film } from "../../models/film.model";
+
+export const loadFilm = createAction('[Films Detail] Load Film', props<{uuid: string}>())
+export const loadFilmSuccess = createAction('[Films Detail] Load Film Success', props<{film: Film}>())
+export const loadFilmError = createAction('[Films Detail] Load Film Success')
+```
+films-page.actions.ts
+```ts
+import { createAction, props } from "@ngrx/store";
+import { Film } from "../../models/film.model";
+
+export const loadFilms = createAction('[Films Page] Load Films')
+export const loadFilmsSuccess = createAction('[Films Page] Load Films Success', props<{films: Film[]}>())
+export const loadFilmsError = createAction('[Films Page] Load Films')
+```
+actions/index.ts
+```ts
+export * from './film-detail.actions';
+export * from './films-page.actions';
+```
+Ahora que ya sabemos las acciones y lo que realizan cada una de ellas creamos los efectos: 
+
+empezamos por films-page.effects.ts:
+```ts
+import { Injectable } from "@angular/core";
+import { Actions, createEffect, ofType } from "@ngrx/effects";
+import { FilmService } from "../../services/film.service";
+import * as fromActions from '../actions';
+import { catchError, map, switchMap } from "rxjs/operators";
+import { of } from "rxjs";
+
+@Injectable()
+export class FilmsPageEffects {
+  constructor(private actions$: Actions, private filmService: FilmService) {}
+
+  loadFilms$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(fromActions.loadFilms),
+      switchMap(() =>
+        this.filmService.getListFilms().pipe(
+          map((films) =>
+            fromActions.loadFilmsSuccess({films})
+          ),
+          catchError(() => of(fromActions.loadFilmsError()))
+        )
+      )
+    )
+  );
+}
+```
+- Nos fijamos que aquí hacemos un switchMap para realizar la llamada al api, pero esta llamada del api tiene un map en el que devolvemos una acción de success a la que le pasamos el resultado.
+- En el catchError, si la llamada falla devolvemos la acción de error.
+
+Como no vamos a realizar nada más con el resto de acciones, no añadimos más efectos a este archivo.
+
+vamos con el film-detail.effects.ts:
+```ts
+import { Injectable } from "@angular/core";
+import { Actions, createEffect, ofType } from "@ngrx/effects";
+import { FilmService } from "../../services/film.service";
+import * as fromActions from '../actions';
+import { catchError, map, switchMap } from "rxjs/operators";
+import { of } from "rxjs";
+
+@Injectable()
+export class FilmDetailEffects {
+  constructor(private actions$: Actions, private filmService: FilmService) {}
+
+  loadFilmDetail$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(fromActions.loadFilm),
+      map(action => action.uuid),
+      switchMap((uuid) =>
+        this.filmService.getFilmById(uuid).pipe(
+          map((film) =>
+            fromActions.loadFilmSuccess({film})
+          ),
+          catchError(() => of(fromActions.loadFilmError()))
+        )
+      )
+    )
+  );
+}
+```
+- Aquí podemos ver como el ofType nos devuelve las props de la acción. Estas las mapeamos para tenerlas más a mano, pero no es imprescindible.
+
+Añadimos al effects/index.ts:
+```ts
+import { FilmsPageEffects } from "./films-page.effects";
+import { FilmDetailEffects } from "./film-detail.effects";
+
+export const effects = [FilmsPageEffects, FilmDetailEffects]
+
+export * from './film-detail.effects'
+export * from './films-page.effects'
+```
+
+Vamos a terminar con los selectores: 
+
+films-page.selectors.ts
+```ts
+import { createSelector } from "@ngrx/store";
+import { getFilmsFeatureState } from "../reducers";
+
+export const getFilmsState = createSelector(getFilmsFeatureState, (state) => state.films)
+export const getFilmsList = createSelector(getFilmsState, (state) => state.films)
+export const getFilmsLoading = createSelector(getFilmsState, (state) => state.loading)
+```
+film-detail.selectors.ts
+```ts
+import { createSelector } from "@ngrx/store";
+import { getFilmsFeatureState } from "../reducers";
+
+export const getDetailsState = createSelector(getFilmsFeatureState, (state) => state.details);
+export const getFilmDetail = createSelector(getDetailsState, (state) => state.film);
+export const getFilmLoading = createSelector(getDetailsState, (state) => state.loading);
+export const getFilmUuid = createSelector(getDetailsState, (state) => state.uuid);
+```
+
+selectors/index.ts
+```ts
+export * from './film-detail.selectors';
+export * from './films-page.selectors';
+```
+
+Vale ya tenemos los selectores ahora solo nos queda inicializar el modulo y añadir los imports correspondientes: 
+
+films.module.ts
+```ts
+import * as fromStore from './store';
+...
+    StoreModule.forFeature('films', fromStore.reducers),
+    EffectsModule.forFeature(fromStore.effects)
+```
+
+Ahora que tenemos todo el Store preparado, vamos a implementarlo en los componentes:
+
+films-page.component.ts
+```ts
+import * as fromStore from '../../store';
+...
+export class FilmsPageComponent implements OnInit {
+  
+  films$: Observable<Film[]> = this.store$.select(fromStore.getFilmsList); // <--- 1º
+  
+  constructor(private filmService: FilmService, 
+              private store$: Store<fromStore.FilmsState> // <---- 2º
+  ) { }
+
+  ngOnInit(): void {
+    this.store$.dispatch(fromStore.loadFilms()); // <----- 3º
+  }
+}
+```
+1. Se usa el selector para tener un observable con todas las películas.
+2. Cambiamos el store para indicarle con más detalle de donde estamos leyendo. Igualmente podemos seguir usando el core para navegar.
+3. Por defecto el array de peliculas está vacio porque ese es su estado inicial, por eso ejecutamos la acción que realiza la carga de peliculas.
+
+Vamos a la página de detalle: 
+
+film-detail.component.ts
+```ts
+...
+import * as fromStore from "../../store";
+import * as fromCoreStore from "../../../../core/store";
+
+export class FilmDetailComponent implements OnInit {
+
+  film$: Observable<Film> = this.store$.select(fromStore.getFilmDetail); // <----- 1º
+
+  constructor(private route: ActivatedRoute,
+              private filmService: FilmService,
+              private store$: Store<fromStore.FilmsState> , // <----- 2º
+  ) {}
+
+  ngOnInit(): void {
+    this.store$
+      .select(fromCoreStore.getRouteParams) // <----- 3º
+      .pipe(take(1), withLatestFrom(this.store$.select(fromCoreStore.getQueryParams))) // <----- 4º
+      .subscribe(([params, queryParams]) => {
+        const uuid = params.id;
+        console.log(queryParams) // <----- 5º
+        this.store$.dispatch(fromStore.loadFilm({uuid})); // <----- 6º
+      })
+  }
+}
+```
+1. Se usa el selector para tener un observable con la película.
+2. Cambiamos el store para indicarle con más detalle de donde estamos leyendo.
+3. Se usa el selector para tener el uuid de la película.
+4. Aquí usamos el withLatestFrom para traernos el último valor de las queryParams. 
+5. Aunque las query params ahora no lo usamos pero así podéis ver como se podrían combinar dos selectores o más.
+6. Ejecutamos la acción para cargar la pelicula pasandole el uuid que usaremos en el effect.
+
+
+Esto sería todo para implementar el store y traernos las películas. 
+
+## RETO implementar el store en la feature de Search
+
+estructura: 
+- Store
+  - Actions
+    - index.ts
+    - search-page.actions.ts
+  - Effects
+    - index.ts
+    - search-page.effects.ts
+  - Reducers
+    - index.ts
+    - search-page.reducer.ts
+  - Selectors
+    - index.ts
+    - search-page.selectors.ts
+- index.ts
+
+reducers/index.ts
+```ts
+import { ActionReducerMap, createFeatureSelector } from "@ngrx/store";
+import * as fromSearch from './search-page.reducer';
+
+export interface SearchState {
+  search: fromSearch.State,
+}
+
+export const reducers: ActionReducerMap<SearchState> = {
+  search: fromSearch.reducer,
+}
+
+export const getSearchFeatureState = createFeatureSelector<SearchState>('search')
+```
+search-page.reducer.ts
+```ts
+import { Film } from "../../../films/models/film.model";
+import { createReducer, on } from "@ngrx/store";
+import * as filmsPageActions from '../actions'
+
+export interface State {
+  films: Film[],
+  query: string,
+  loading: boolean
+}
+
+export const initialState: State = {
+  films: [],
+  query: '',
+  loading: false,
+};
+
+export const reducer = createReducer(
+  initialState,
+  on(filmsPageActions.loadSearchedFilm, (state, action) => ({
+    ...state,
+    query: action.query,
+    loading: true,
+  })),
+  on(filmsPageActions.loadSearchedFilmSuccess, (state, action) => ({
+    ...state,
+    loading: false,
+    films: action.films
+  })),
+  on(filmsPageActions.loadSearchedFilmError, (state) => ({
+    ...state,
+    loading: false,
+  })),
+)
+```
+
+search-page.actions.ts
+```ts
+import { createAction, props } from "@ngrx/store";
+import { Film } from "../../../films/models/film.model";
+
+export const loadSearchedFilm = createAction('[Search Page] Load Searched Films', props<{query: string}>())
+export const loadSearchedFilmSuccess = createAction('[Search Page] Load Searched Films Success', props<{films: Film[]}>())
+export const loadSearchedFilmError = createAction('[Search Page] Load Searched Films Error')
+```
+
+actions/index.ts
+```ts
+export * from './search-page.actions';
+```
+
+search-page.effects.ts
+```ts
+import { Injectable } from "@angular/core";
+import { Actions, createEffect, ofType } from "@ngrx/effects";
+import * as fromActions from '../actions';
+import { catchError, map, switchMap } from "rxjs/operators";
+import { of } from "rxjs";
+import { FilmService } from "../../../films/services/film.service";
+
+@Injectable()
+export class SearchPageEffects {
+  constructor(private actions$: Actions, private filmService: FilmService) {}
+
+  loadFilms$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(fromActions.loadSearchedFilm),
+      map(action => action.query),
+      switchMap((query) =>
+        this.filmService.searchFilms(query).pipe(
+          map((films) =>
+            fromActions.loadSearchedFilmSuccess({films})
+          ),
+          catchError(() => of(fromActions.loadSearchedFilmError()))
+        )
+      )
+    )
+  );
+}
+```
+
+effects/index.ts
+```ts
+import { SearchPageEffects } from "./search-page.effects";
+
+export const effects = [SearchPageEffects]
+
+export * from './search-page.effects'
+```
+
+search-page.selectors.ts
+```ts
+import { createSelector } from "@ngrx/store";
+import { getSearchFeatureState } from "../reducers";
+
+export const getFilmsState = createSelector(getSearchFeatureState, (state) => state.search)
+export const getFilmsSearched = createSelector(getFilmsState, (state) => state.films)
+export const getFilmsQuery = createSelector(getFilmsState, (state) => state.query)
+export const getSearchLoading = createSelector(getFilmsState, (state) => state.loading)
+```
+selectors/index.ts
+```ts
+export * from './search-page.selectors';
+```
+
+store/index.ts
+```ts
+export * from './actions';
+export * from './effects';
+export * from './reducers';
+export * from './selectors';
+```
+
+search.module.ts
+```ts
+import * as fromStore from "./store";
+
+imports: [
+  StoreModule.forFeature('search', fromStore.reducers),
+  EffectsModule.forFeature(fromStore.effects)
+]
+```
+
+search-page.component.ts
+```ts
+import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
+import { FilmService } from "../../../films/services/film.service";
+import * as fromCoreStore from "../../../../core/store";
+import * as fromStore from "../../store";
+import { Store } from "@ngrx/store";
+
+@Component({
+  selector: 'app-search-page',
+  templateUrl: './search-page.component.html',
+  styleUrls: ['./search-page.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class SearchPageComponent implements OnInit {
+  films$ = this.store$.select(fromStore.getFilmsSearched);
+
+  constructor(private filmService: FilmService, private store$: Store<fromStore.SearchState>) { }
+
+  ngOnInit(): void {
+  }
+
+  searchFilm(searchText: string) {
+    this.store$.dispatch(fromStore.loadSearchedFilm({ query: searchText }));
+  }
+
+  openFilm(id: string){
+    this.store$.dispatch(fromCoreStore.go({commands: ['/films', id]}));
+  }
+}
+```
+
+Con esto toda la aplicación estaría lista con su estado guardado.
+
+##Bonus Añadir componente Loading
+
+Vamos a crear un componente de loading para mostrar una animación mientras carga los datos.
+
+```
+ng g c shared/components/loading
+```
+
+```html
+<div class="flex-center">
+  <mat-spinner diameter="200"></mat-spinner>
+</div>
+```
+
+```scss
+.flex-center{
+  display: flex;
+  justify-content: center;
+}
+```
+
+y lo añadiremos así en las páginas contenedores: 
+
+```html
+<app-loading *ngIf="loading$ |async"></app-loading>
+```
+
+cargamos el loading en el .ts de los contenedores: 
+```ts
+loading$: Observable<boolean> = this.store$.select(fromStore.getFilmsLoading);
+```
+
+Con esto tendremos los loadings añadidos.
+
+## Arreglar Parpadeo
+
+Si entráis a el detalle de una pelicula, salís y volvéis a entrar veréis que, incluso con el loading se ve la carga de dato anterior, parpadea y la nueva información aparece.
+Esto ocurre porque el estado inicial del detalle es un objeto inicializado entonces el if siempre es true. 
+
+Para evitar esto tenemos que declarar en el estado que el objeto puede ser null. Además crearemos una nueva acción para limpiar el estado al destruirse el componente.
+
+actions/film-detail.actions.ts
+```ts
+export const unloadFilm = createAction('[Films Detail] Unload Film')
+```
+reducers/film-detail.reducer.ts
+```ts
+import { Film } from "../../models/film.model";
+import { createReducer, on } from "@ngrx/store";
+import * as filmsDetailActions from '../actions'
+
+export interface State {
+  film: Film | null, //<--- 1º
+  loading: boolean,
+  uuid: string | null // <--- 2º
+}
+
+export const initialState: State = {
+  film: null, // <--- 3º
+  loading: false,
+  uuid: null // <--- 4º
+};
+
+export const reducer = createReducer(
+  initialState,
+  on(filmsDetailActions.loadFilm, (state, action) => ({
+    ...state,
+    loading: true,
+    uuid: action.uuid
+  })),
+  on(filmsDetailActions.loadFilmSuccess, (state, action) => ({
+    ...state,
+    loading: false,
+    film: action.film
+  })),
+  on(filmsDetailActions.loadFilmError, (state) => ({
+    ...state,
+    loading: false,
+  })),
+  on(filmsDetailActions.unloadFilm, (state) => ({ // <--- 5º
+    ...state,
+    film: null,
+    uuid: null
+  }))
+)
+```
+1. Declaramos que el film puede ser null
+2. Hacemos lo mismo con el uuid
+3. Inicializamos el film a null
+4. Inicializamos el uuid a null
+5. UnloadFilm se dispara cuando se destruye el componente, por lo que limpiamos el estado.
+
+en el componente de detalle: 
+```ts
+  ngOnDestroy(): void {
+    this.store$.dispatch(fromStore.unloadFilm());
+  }
+```
