@@ -1,6 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { BarSearchComponent } from './bar-search.component';
+import { TranslateModule } from "@ngx-translate/core";
+import { ReactiveFormsModule } from "@angular/forms";
 
 describe('BarSearchComponent', () => {
   let component: BarSearchComponent;
@@ -8,7 +10,8 @@ describe('BarSearchComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ BarSearchComponent ]
+      declarations: [ BarSearchComponent ],
+      imports: [TranslateModule.forRoot(), ReactiveFormsModule]
     })
     .compileComponents();
   });

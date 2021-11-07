@@ -18,7 +18,7 @@ export class FilmDetailComponent implements OnInit, OnDestroy {
 
   film$ = this.store$.select(fromStore.getFilmDetail);
   loading$: Observable<boolean> = this.store$.select(fromStore.getFilmLoading);
-  constructor(private route: ActivatedRoute, private filmService: FilmService, private store$: Store<fromStore.FilmsState>) { }
+  constructor(private route: ActivatedRoute, private store$: Store<fromStore.FilmsState>) { }
 
   ngOnInit(): void {
     this.store$

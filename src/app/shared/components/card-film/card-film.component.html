@@ -1,4 +1,4 @@
-<mat-card class="card">
+<mat-card class="card" *ngIf="film">
   <mat-card-header>
     <mat-card-title>{{film.title}}</mat-card-title>
     <mat-card-subtitle>{{film.original_title}} - {{film.original_title_romanised}}</mat-card-subtitle>

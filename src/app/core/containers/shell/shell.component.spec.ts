@@ -1,6 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { ShellComponent } from './shell.component';
+import { TranslateModule } from "@ngx-translate/core";
+import { provideMockStore } from "@ngrx/store/testing";
+import { RouterTestingModule } from "@angular/router/testing";
 
 describe('ShellComponent', () => {
   let component: ShellComponent;
@@ -8,7 +11,9 @@ describe('ShellComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ ShellComponent ]
+      declarations: [ ShellComponent ],
+      imports: [TranslateModule.forRoot({}), RouterTestingModule],
+      providers: [provideMockStore({})]
     })
     .compileComponents();
   });

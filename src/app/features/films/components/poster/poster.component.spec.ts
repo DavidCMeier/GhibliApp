@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { PosterComponent } from './poster.component';
+import { TranslateModule } from "@ngx-translate/core";
 
 describe('PosterComponent', () => {
   let component: PosterComponent;
@@ -8,7 +9,8 @@ describe('PosterComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ PosterComponent ]
+      declarations: [ PosterComponent ],
+      imports: [TranslateModule.forRoot()]
     })
     .compileComponents();
   });

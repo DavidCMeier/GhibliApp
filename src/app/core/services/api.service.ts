@@ -9,7 +9,7 @@ import { Observable } from "rxjs";
 })
 export class ApiService {
 
-  constructor(private http: HttpClient, @Inject(API_BASE_URL) private baseUrl?: string) {}
+  constructor(private http: HttpClient, @Optional() @Inject(API_BASE_URL) private baseUrl?: string) {}
 
   get<T>(url: string, params: ParamsUrl = {}): Observable<T> {
     const paramsToSend: HttpParams = new HttpParams({
