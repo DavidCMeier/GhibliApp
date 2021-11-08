@@ -1,7 +1,6 @@
 import { createReducer, on } from "@ngrx/store";
 import * as preferencesActions from '../actions';
 
-
 export interface State {
   language: string;
 }

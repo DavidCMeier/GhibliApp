@@ -16,7 +16,7 @@ export class FilmsPageComponent implements OnInit {
 
   films$: Observable<Film[]> = this.store$.select(fromStore.getFilmsList);
   loading$: Observable<boolean> = this.store$.select(fromStore.getFilmsLoading);
-  constructor(private filmService: FilmService, private store$: Store<fromStore.FilmsState>) { }
+  constructor(private store$: Store<fromStore.FilmsState>) { }
 
   ngOnInit(): void {
     this.store$.dispatch(fromStore.loadFilms());

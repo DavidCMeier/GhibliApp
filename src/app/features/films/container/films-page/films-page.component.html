@@ -1,5 +1,12 @@
-<ng-container *ngIf="films$ | async as films">
-  <app-films-list [films]="films" (selectedFilmId)="openFilm($event)"></app-films-list>
+<ng-container  *ngIf="!(loading$ |async) else load" >
+  <ng-container *ngIf="films$ | async as films">
+    <app-films-list [films]="films" (selectedFilmId)="openFilm($event)"></app-films-list>
+  </ng-container>
 </ng-container>
 
-<app-loading *ngIf="loading$ |async"></app-loading>
+<ng-template #load>
+
+  <app-loading ></app-loading>
+
+</ng-template>
+

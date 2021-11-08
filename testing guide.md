@@ -55,6 +55,14 @@ Nos queda un par de cosas que modificar, primero el tsconfig.spec.json:
 2. Dejamos solo el tipado de jest
 3. Eliminamos la referencia al fichero de test.
 
+En el tsconfig.json debemos de añadir los tipos de jest: 
+```json
+    "types": [
+      "jest"
+    ]
+```
+Esto evitará problemas a la hora que se reconozca jest a la hora de trabajar.
+
 Vamos al package.json, en los scripts añadiremos:
 ```
 "test:watch": "ng test -- --watchAll --detectOpenHandles",
@@ -109,3 +117,17 @@ Algunos detalles para solucionar rapidamente los tests:
   - `'mat-card' is not a known element` requiere que añadamos el modulo MatCardModule, no el componente solo.
 - Si te indica que está todo resuelto pero tu ves algún error en la consola, resuelve el error, porque muchas veces el error no es determinante para que falle el test.
 
+
+## ¿Qué testear?
+
+Hay distintas teorías, pero la más practica es la que implica testear la lógica de negocio. 
+Ahora bien, ¿dónde está la lógica de negocio en ngrx? Pues si hemos seguido correctamente la implementación de ngrx y el patrón de conteiner/component podremos ver que la lógica está principalmente en los containers, en los effects y en los reducers.
+
+Testear esto implica que en los containers vamos a realizar muchos tests de integración y en los effects y reducers tendremos tests unitarios.
+Igualmente lo que hay que testear se reduce "a lo que creas conveniente". Si tienes un servicio con lógica para fechas, pues debes de testearlo, por ejemplo.
+
+Vamos a empezar con un test a un container: 
+
+film-detail.component.ts
+```ts 
+```

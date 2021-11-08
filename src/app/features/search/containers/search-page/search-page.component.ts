@@ -3,6 +3,8 @@ import { FilmService } from "../../../films/services/film.service";
 import * as fromCoreStore from "../../../../core/store";
 import * as fromStore from "../../store";
 import { Store } from "@ngrx/store";
+import { switchMap } from "rxjs/operators";
+import { timer } from "rxjs";
 
 @Component({
   selector: 'app-search-page',
@@ -12,7 +14,8 @@ import { Store } from "@ngrx/store";
 })
 export class SearchPageComponent implements OnInit {
   films$ = this.store$.select(fromStore.getFilmsSearched);
-  loading$ = this.store$.select(fromStore.getSearchLoading)
+  loading$ = timer(1000).pipe(switchMap(() => this.store$.select(fromStore.getSearchLoading)));
+
   constructor(private filmService: FilmService, private store$: Store<fromStore.SearchState>) { }
 
   ngOnInit(): void {

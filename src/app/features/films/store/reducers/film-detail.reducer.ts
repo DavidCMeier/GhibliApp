@@ -31,8 +31,6 @@ export const reducer = createReducer(
     loading: false,
   })),
   on(filmsDetailActions.unloadFilm, (state) => ({
-    ...state,
-    film: null,
-    uuid: null
+    ...initialState
   }))
 )

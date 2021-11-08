@@ -1,0 +1,84 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`FilmDetailComponent should create 1`] = `
+<app-film-detail
+  __ngContext__={[Function LRootView]}
+  film$={[Function Store]}
+  loading$={[Function Store]}
+  store$={[Function MockStore]}
+>
+</app-film-detail>
+`;
+
+exports[`FilmDetailComponent should show details from one movie 1`] = `
+<app-film-detail
+  __ngContext__={[Function LRootView]}
+  film$={[Function Store]}
+  loading$={[Function Store]}
+  store$={[Function MockStore]}
+>
+  <div
+    class="flex-content"
+  >
+    <app-card-detail>
+      <div
+        class="flex-content"
+      >
+        <mat-card
+          class="mat-card mat-focus-indicator card-detail"
+        >
+          <mat-card-title
+            class="mat-card-title"
+          >
+            test
+          </mat-card-title>
+          <mat-card-subtitle
+            class="mat-card-subtitle"
+          >
+             test - test
+          </mat-card-subtitle>
+          <img
+            alt="test banner"
+            class="mat-card-image"
+            mat-card-image=""
+            src="test"
+          />
+          <mat-card-content
+            class="mat-card-content"
+          >
+            <p>
+              films.detail.original_title
+            </p>
+            <p>
+              films.detail.original_title_romanised
+            </p>
+            <p>
+              test
+            </p>
+            s 
+            <p>
+              films.detail.directed
+            </p>
+            <p>
+              films.detail.produced
+            </p>
+            <p>
+              films.detail.duration
+            </p>
+            <p>
+              films.detail.rt_score
+            </p>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </app-card-detail>
+    <app-poster>
+      <img
+        alt="films.poster.alt"
+        class="poster"
+        src="test"
+      />
+    </app-poster>
+  </div>
+</app-film-detail>
+`;
